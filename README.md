@@ -1,69 +1,69 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
 ```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+import t from '@babel/types';
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
+let start = 0;
+export default function domMaker() {
+  return {
+    visitor: {
+        Program: {
+        enter() {
+          start = performance.now();
+        },
+        exit() {
+          const end = performance.now();
+          console.log('JSXElement modify耗时(ms):', end - start);
+        }
       },
-      // other options...
-    },
-  },
-])
+      JSXElement(path) {
+        const { node } = path;
+        if (node.openingElement.name.type === 'JSXIdentifier' && 
+            /^[a-zA-Z]/.test(node.openingElement.name.name)) {
+          
+          const openingElement = node.openingElement;
+          const closingElement = node.closingElement;
+          console.log('openingElement', openingElement);
+          // 获取开始和结束行号
+          const startLine = openingElement.loc?.start?.line;
+          console.log(startLine)
+          const endLine = closingElement?.loc?.end?.line || openingElement.loc?.end?.line;
+          
+          if (!startLine || !endLine) return;
+          
+          // 检查是否已存在这些属性
+          const hasStartLine = openingElement.attributes.some(
+            attr => attr.name && attr.name.name === 'data-start-line'
+          );
+          const hasEndLine = openingElement.attributes.some(
+            attr => attr.name && attr.name.name === 'data-end-line'
+          );
+          
+          // 添加或更新属性
+          if (!hasStartLine) {
+            openingElement.attributes.push(
+              t.jsxAttribute(
+                t.jsxIdentifier('data-start-line'),
+                t.stringLiteral(startLine.toString())
+              )
+            );
+          }
+          
+          if (!hasEndLine) {
+            openingElement.attributes.push(
+              t.jsxAttribute(
+                t.jsxIdentifier('data-end-line'),
+                t.stringLiteral(endLine.toString())
+              )
+            );
+          }
+        }
+      }
+    }
+  };
+};
+
+// JSXElement modify耗时(ms): 5.4102499999571
+// JSXElement modify耗时(ms): 1.7017499999997199
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 两次测试时间差距怎么会这么大？
