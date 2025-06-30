@@ -4,6 +4,10 @@ export default function DemoComponent() {
       <p>This is a <span>test</span> component</p>
       <>
         <div>Fragment content</div>
+        <div>Fragment content 2</div>
+        <div>
+          <p>111</p>
+        </div>
       </>
     </div>
   )
