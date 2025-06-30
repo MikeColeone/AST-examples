@@ -36,8 +36,7 @@ export default function vitePluginJsxLines(options: Options = {}): Plugin {
         const { node } = path;
         const openingElement = node.openingElement;
         
-        if (openingElement.name.type === 'JSXIdentifier' && 
-            /^[a-z]/.test(openingElement.name.name)) {
+        if (openingElement.name.type === 'JSXIdentifier') {
           
           const closingElement = node.closingElement;
           const startLine = openingElement.loc?.start.line;
