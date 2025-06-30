@@ -5,24 +5,27 @@ const generate = (generateModule as any).default || generateModule;
 import t from '@babel/types';
 import traverseModule from '@babel/traverse';
 const traverse = (traverseModule as any).default || traverseModule;
+import path from 'path';
+
 interface Options {
-  enabled?: boolean;
   logPerf?: boolean;
+  root?: string;
 }
 
 export default function vitePluginJsxLines(options: Options = {}): Plugin {
-  const { enabled = true, logPerf = true } = options;
+  const { logPerf = false, root = process.cwd() } = options;
 
   return {
     name: 'vite-plugin',
     enforce: 'pre',
 
     async transform(code, id) {
-      if (!enabled) return;
       if (!/\.(jsx|tsx)$/.test(id)) return;
-      console.log(`[vite-plugin] 正在处理文件: ${id}`);
       let startTime = 0;
       if (logPerf) startTime = performance.now();
+
+      // 计算相对路径
+      const relPath = path.relative(root, id);
 
       const ast = parse(code, {
         sourceType: 'module',
@@ -40,8 +43,6 @@ export default function vitePluginJsxLines(options: Options = {}): Plugin {
             const startLine = openingElement.loc?.start.line;
             const endLine = node.closingElement?.loc?.end.line ?? openingElement.loc?.end.line;
             const tagName = openingElement.name.name;
-
-            // 检查属性是否已存在
             const hasStart = openingElement.attributes.some(attr =>
               attr.type === 'JSXAttribute' && attr.name.name === 'data-start-line'
             );
@@ -76,8 +77,8 @@ export default function vitePluginJsxLines(options: Options = {}): Plugin {
             if (!hasTag) {
               openingElement.attributes.push(
                 t.jsxAttribute(
-                  t.jsxIdentifier('data-component'),
-                  t.stringLiteral(tagName)
+                  t.jsxIdentifier('data-component-name'),
+                  t.stringLiteral(String(tagName ?? ''))
                 )
               );
             }
@@ -86,7 +87,7 @@ export default function vitePluginJsxLines(options: Options = {}): Plugin {
               openingElement.attributes.push(
                 t.jsxAttribute(
                   t.jsxIdentifier('data-file'),
-                  t.stringLiteral(id)
+                  t.stringLiteral(relPath)
                 )
               );
             }
@@ -94,7 +95,7 @@ export default function vitePluginJsxLines(options: Options = {}): Plugin {
         },
       });
 
-      const output = generate(ast, { sourceMaps: true, filename: id }, code);
+      const output = generate(ast, { sourceMaps: true, filename: relPath }, code);
 
       if (logPerf) {
         const end = performance.now();
@@ -102,10 +103,9 @@ export default function vitePluginJsxLines(options: Options = {}): Plugin {
           `[vite-plugin] 转换耗时: ${(end - startTime).toFixed(2)}ms`
         );
       }
-
       return {
         code: output.code,
-        map: output.map,
+        // map: output.map,
       };
     },
   };
