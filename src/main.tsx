@@ -1,9 +1,6 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
+import ReactDOM from "react-dom/client";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+const App = () => <h1>Hello Rspack + React + TSX!</h1>;
+
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+root.render(<App />);
