@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Echarts主题设置示例</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+  </head>
+  <body>
+    <!-- 在这里绘制图表 -->
+    <script>
+      // 初始化Echarts实例
+      var myChart = echarts.init(document.body);
+
+      // 配置项
+      var option = {
+        // 其他配置项...
+        textStyle: {
+          fontFamily: "Arial, sans-serif",
+          fontSize: 12,
+          fontWeight: "normal",
+        },
+        tooltip: {
+          // 配置提示框样式
+        },
+        series: [
+          {
+            type: "bar",
+            // 配置系列样式
+          },
+        ],
+        // 使用预定义主题
+        color: "roma",
+      };
+
+      // 使用配置项显示图表
+      myChart.setOption(option);
+    </script>
+  </body>
+</html>
