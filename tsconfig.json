@@ -2,11 +2,6 @@
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" },
-    
-  ],
-  "compilerOptions": {
-    "composite": true,
-    "lib": ["dom", "esnext"],
-    "target": "ESNext",}
+    { "path": "./tsconfig.node.json" }
+  ]
 }
